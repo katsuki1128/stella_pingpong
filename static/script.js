@@ -114,3 +114,8 @@ document.getElementById('playButton').addEventListener('click', () => {
 
 const canvas = document.getElementById('satelliteCanvas');
 drawSatelliteTracks(canvas, pathsFuture, 0, map);
+
+// 地図の範囲が変更されたときに再描画
+map.on('moveend', () => {
+    drawSatelliteTracks(canvas, pathsFuture, 0, map);
+});

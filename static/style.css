@@ -78,4 +78,9 @@
     .satellite-icon {
         padding: 1px;
     }
+
+    h1 {
+        font-size: 1.5em; /* フォントサイズを小さく */
+        text-align: center; /* 中央揃え */
+    }
 }
