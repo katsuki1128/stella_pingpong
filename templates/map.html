@@ -1,0 +1,27 @@
+<!-- templates/map.html -->
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>stellar PingPong</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+</head>
+
+<body>
+    <h1>ステラピンポン【⭐️衛星卓球🏓】</h1>
+    <canvas id="satelliteCanvas"></canvas>
+    <div id="playButton">▶️12時間の動き</div>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script id="current-positions" type="application/json">{{ current_positions | tojson | safe }}</script>
+    <script id="paths" type="application/json">{{ paths | tojson | safe }}</script>
+    <script id="paths-future" type="application/json">{{ paths_future | tojson | safe }}</script>
+    <script src="{{ url_for('static', filename='script.js') }}" type="module"></script>
+
+</body>
+
+</html>

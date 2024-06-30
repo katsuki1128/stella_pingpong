@@ -1,0 +1,53 @@
+#map {
+    height: 450px;
+    width: 100%;
+}
+
+.satellite-label {
+    /* border: 1px solid black; */
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 12px;
+    white-space: nowrap;
+    display: flex;
+    flex-direction: column;
+    /* 縦方向にアイテムを配置 */
+    align-items: center;
+    /* 中央揃え */
+}
+
+.satellite-icon {
+    background-color: rgba(255, 255, 255, 0.7);
+    /* 薄い白い背景 */
+    padding: 2px;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+.satellite-icon::before {
+    content: '🛰️';
+    /* アイコンを🛰️に変更 */
+    /* font-size: 40px; */
+    /* アイコンのサイズを設定 */
+}
+
+.satellite-icon-inside {
+    background-color: yellow !important;
+}
+
+#playButton {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    z-index: 1000;
+    padding: 10px;
+    background-color: white;
+    border: 1px solid black;
+    cursor: pointer;
+}
+
+#satelliteCanvas {
+    height: 350px;
+    width: 100%;
+    border: 1px solid black;
+}
