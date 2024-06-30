@@ -1,0 +1,19 @@
+# Ignore Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environment directory
+myenv/
+.venv/
+env/
+
+# Ignore distribution/build directories
+build/
+dist/
+*.egg-info/
+
+# Ignore logs and databases
+*.log
+*.sqlite3
