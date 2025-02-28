@@ -1,4 +1,14 @@
 /* static/style.css */
+
+#container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background-image: url('{{ url_for('static', filename='sky.jpg') }}');
+    background-size: cover;
+    background-position: center;
+}
+
 #map {
     height: 450px;
     width: 100%;
@@ -57,7 +67,7 @@
 /* メディアクエリを追加してレスポンシブ対応 */
 @media (max-width: 768px) {
     #map {
-        height: 300px;
+        height: 500px;
     }
 
     #satelliteCanvas {

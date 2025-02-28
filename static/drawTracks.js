@@ -17,14 +17,23 @@ export const drawSatelliteTracks = (canvas, pathsFuture, currentTimeIndex, map) 
     const east = bounds.getEast();
     const south = bounds.getSouth();
     const north = bounds.getNorth();
-    console.log(south, north)
+    // console.log(south, north)
 
     // 高度の範囲
     const minAltitude = 19000;
     const maxAltitude = 40000;
     const fukuokaLatitude = 33.5902;
 
+    // 緯度に基づく比率と強度を計算する関数
+    const calculateRatios = (latitude, fukuokaLatitude, north) => {
+        const latitudeRatio = (latitude - fukuokaLatitude) / (north - fukuokaLatitude);
+        const normRatio = 1 - Math.max(0, Math.min(1, latitudeRatio));
+
+        return normRatio;
+    };
+
     for (const path of Object.values(pathsFuture)) {
+
         ctx.beginPath();
         path.forEach((point, index) => {
             const x = (point.longitude - west) * (canvas.width / (east - west));
@@ -39,11 +48,13 @@ export const drawSatelliteTracks = (canvas, pathsFuture, currentTimeIndex, map) 
             let arcRadiusX = 0;
             let arcRadiusY = 0;
 
+
+            const normRatio = calculateRatios(point.latitude, fukuokaLatitude, north);
+
             if (point.latitude >= fukuokaLatitude) {
-                const latitudeRatio = (point.latitude - fukuokaLatitude) / (north - fukuokaLatitude);
-                const normalizedInverseRatio = 1 - Math.max(0, Math.min(1, latitudeRatio));
-                arcRadiusX = 5 + 100 * normalizedInverseRatio;
-                arcRadiusY = 5 + 25 * normalizedInverseRatio;
+                // const { normalizedInverseRatio } = calculateRatios(point.latitude, fukuokaLatitude, north);
+                arcRadiusX = 5 + 100 * normRatio;
+                arcRadiusY = 5 + 25 * normRatio;
 
                 // 福岡に近づくほどキャンバスの上部に配置
                 const distanceToFukuokaRatio = (fukuokaLatitude - point.latitude) / (fukuokaLatitude - north);
@@ -53,7 +64,13 @@ export const drawSatelliteTracks = (canvas, pathsFuture, currentTimeIndex, map) 
                 arcRadiusY = 0; // 福岡の緯度より南の場合は消す
             }
 
+            // 緯度に基づいて黄色の色の濃さを計算
+            // const normalizedInverseRatio = calculateRatios(point.latitude, fukuokaLatitude, north);
+            // const yellowColor = `rgba(255, 255, 0, ${1 - normRatio})`;
+            const yellowColor = `rgba(255, 255, 0, 1)`;
+
             if (arcRadiusX > 0 && arcRadiusY > 0) {
+                ctx.strokeStyle = yellowColor;
                 if (index === currentTimeIndex) {
                     // ctx.moveTo(x, y);
                     ctx.ellipse(x, y, arcRadiusX, arcRadiusY, 0, 0, 2 * Math.PI); // 楕円を描画
@@ -62,7 +79,6 @@ export const drawSatelliteTracks = (canvas, pathsFuture, currentTimeIndex, map) 
                 }
             }
         });
-        ctx.strokeStyle = 'yellow';
         ctx.stroke();
     }
 };
