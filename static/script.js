@@ -1,6 +1,6 @@
 // static/script.js
 import { drawSatelliteTracks } from './drawTracks.js';
-const map = L.map('map').setView([33.5902, 130.4017], 4);
+const map = L.map('map').setView([33.5902, 130.4017], 2);
 
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

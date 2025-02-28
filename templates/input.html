@@ -1,0 +1,153 @@
+<!-- templates/input.html -->
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>推しに願いを</title>
+    <style>
+        #card-container {
+            position: relative;
+            width: 800px;
+        }
+
+        #card-image {
+            width: 100%;
+        }
+
+        #name-overlay {
+            position: absolute;
+            top: 30%;
+            left: 21.5%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: black;
+            font-weight: bold;
+        }
+
+        #small-text-overlay {
+            position: absolute;
+            top: 35%;
+            left: 22%;
+            transform: translate(-50%, -50%);
+            font-size: 15px;
+            color: black;
+        }
+
+        #photo-overlay {
+            position: absolute;
+            top: 59%;
+            left: 25%;
+            transform: translate(-50%, -50%);
+            width: 125px;
+            height: 125px;
+            border-radius: 10%;
+            overflow: hidden;
+            display: none;
+        }
+
+        #photo-overlay img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>クルー証明書作成</h1>
+    <p>推しの名前と写真を登録してください</p>
+    <input type="text" id="name-input" placeholder="名前を入力してください" value="阿部 寛"><br>
+    <input type="text" id="small-text-input" placeholder="アルファベット" value="Abe Hiroshi"><br>
+    <input type="file" id="photo-input" accept="image/*"><br>
+    <div id="card-container">
+        <img id="card-image" src="{{ url_for('static', filename='img/bg_card.jpg') }}" alt="Crew Card">
+        <div id="name-overlay"></div>
+        <div id="small-text-overlay"></div>
+        <div id="photo-overlay"><img id="photo" src="" alt="Photo"></div>
+    </div>
+    <br>
+    <button id="generate-button">画像を生成</button>
+    <button id="print-button">印刷</button>
+    <a href="{{ url_for('map') }}">地図ページへ</a>
+
+    <script>
+        document.getElementById('name-input').addEventListener('input', function () {
+            document.getElementById('name-overlay').textContent = this.value;
+        });
+        document.getElementById('small-text-input').addEventListener('input', function () {
+            document.getElementById('small-text-overlay').textContent = this.value;
+        });
+        document.getElementById('photo-input').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            const photoOverlay = document.getElementById('photo-overlay');
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('photo').src = e.target.result;
+                    photoOverlay.style.display = 'block'; // 画像が選択されたら表示
+                };
+                reader.readAsDataURL(file);
+            } else {
+                photoOverlay.style.display = 'none'; // 画像が選択されていない場合は非表示
+            }
+        });
+
+        document.getElementById('generate-button').addEventListener('click', function () {
+            const name = document.getElementById('name-input').value;
+            const smallText = document.getElementById('small-text-input').value;
+            const photo = document.getElementById('photo').src;
+
+            fetch('/upload_photo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ photo: photo })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const photoUrl = data.photo_url;
+                    console.log("photoUrl", photoUrl);
+
+                    fetch('/generate_image', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ name: name, small_text: smallText, photo_url: photoUrl })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Image generated:', data.image_url);
+                            document.getElementById('print-button').dataset.imageUrl = data.image_url;
+                        });
+                });
+        });
+        document.getElementById('print-button').addEventListener('click', function () {
+            const imageUrl = this.dataset.imageUrl;
+            if (!imageUrl) {
+                alert('画像が生成されていません。');
+                return;
+            }
+
+            fetch('/print_image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ image_url: imageUrl })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Print job submitted:', data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+</body>
+
+</html>

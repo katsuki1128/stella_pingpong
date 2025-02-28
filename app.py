@@ -1,5 +1,5 @@
 # app.py
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify, request, url_for
 import numpy as np
 from skyfield.api import Topos, load
 from datetime import datetime, timezone, timedelta
@@ -7,6 +7,10 @@ import os
 import requests
 import pickle
 from geopy.distance import geodesic
+from PIL import Image, ImageDraw, ImageFont
+import requests
+from io import BytesIO
+import base64
 
 app = Flask(__name__)
 
@@ -103,7 +107,162 @@ def get_time_ranges(ts):
 
 
 @app.route("/")
-def index():
+def input_page():
+    return render_template("input.html")
+
+
+@app.route("/upload_photo", methods=["POST"])
+def upload_photo():
+    data = request.json
+    photo_data = data.get("photo").split(",")[1]  # Base64 データ部分を取得
+
+    # Base64 データを画像に変換して保存
+    photo = Image.open(BytesIO(base64.b64decode(photo_data)))
+    photo_path = os.path.join(app.static_folder, "uploads/photo.jpg")
+    photo.save(photo_path)
+
+    return jsonify(
+        {"photo_url": url_for("static", filename="uploads/photo.jpg", _external=True)}
+    )
+
+
+# ========================================
+# 画像を作る関数
+# ========================================
+@app.route("/generate_image", methods=["POST"])
+def generate_image():
+    data = request.json
+    name = data.get("name")
+    small_text = data.get("small_text")
+    photo_url = data.get("photo_url")
+    print("photo_url", photo_url)
+
+    # 背景画像を読み込む
+    bg_image_path = os.path.join(app.static_folder, "img/bg_card.jpg")
+    bg_image = Image.open(bg_image_path)
+
+    # フォントを設定
+    font_path = os.path.join(
+        app.static_folder, "fonts/NotoSansJP-VariableFont_wght.ttf"
+    )
+    font = ImageFont.truetype(font_path, 24)
+    small_font = ImageFont.truetype(font_path, 15)
+
+    # 画像にテキストを描画
+    draw = ImageDraw.Draw(bg_image)
+    draw.text((100, 100), name, font=font, fill="black")
+    draw.text((100, 150), small_text, font=small_font, fill="black")
+
+    # 写真を読み込んで貼り付け
+    response = requests.get(photo_url)
+    photo = Image.open(BytesIO(response.content))
+    photo = photo.resize((125, 125))
+    bg_image.paste(photo, (100, 200))
+
+    # 画像を保存
+    output_path = os.path.join(app.static_folder, "output/generated_image.jpg")
+    bg_image.save(output_path)
+
+    return jsonify(
+        {
+            "image_url": url_for(
+                "static", filename="output/generated_image.jpg", _external=True
+            )
+        }
+    )
+
+
+# ========================================
+# 印刷する関数
+# ========================================
+@app.route("/print_image", methods=["POST"])
+def print_image():
+    data = request.json
+    image_url = data.get("image_url")
+
+    # Epson Connect APIのエンドポイント
+    auth_url = (
+        "https://api.epsonconnect.com/api/1/printing/oauth2/auth/token?subject=printer"
+    )
+    client_id = "24b814f980e049acac66a6bc05d3a611"
+    client_secret = "bFrH4Cl6h0u8ewIwxju854FsQImy9ev1RacfkgH8K29i5w2GA0XFJn6ewZEWVbAz"
+    printer_email = "HACKSONIC_EW-M973A3T@print.epsonconnect.com"
+
+    # 認証
+    auth_response = requests.post(
+        auth_url,
+        data={"grant_type": "password", "username": printer_email, "password": ""},
+        headers={
+            "Authorization": f'Basic {base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()}',
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+    )
+
+    if auth_response.status_code != 200:
+        return jsonify({"error": "Authentication failed"}), 400
+
+    auth_data = auth_response.json()
+    access_token = auth_data["access_token"]
+    device_id = auth_data["subject_id"]
+
+    # 印刷設定
+    job_url = f"https://api.epsonconnect.com/api/1/printing/printers/{device_id}/jobs"
+    job_response = requests.post(
+        job_url,
+        json={"job_name": "SpaceCowboy", "print_mode": "photo"},
+        headers={
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+        },
+    )
+
+    if job_response.status_code != 201:
+        return jsonify({"error": "Failed to create print job"}), 400
+
+    job_data = job_response.json()
+    job_id = job_data["id"]
+    upload_uri = job_data["upload_uri"]
+
+    # デバッグ用ログ出力
+    print(f"Upload URI: {upload_uri}")
+    print(f"Image URL: {image_url}")
+
+    # 印刷ファイルのアップロード
+    file_response = requests.post(
+        upload_uri,
+        headers={
+            "Content-Length": str(len(requests.get(image_url).content)),
+            "Content-Type": "application/octet-stream",
+        },
+        params={"Key": upload_uri.split("Key=")[-1], "File": "1.jpg"},
+        data=requests.get(image_url).content,
+    )
+
+    # デバッグ用ログ出力
+    print(f"File upload response status: {file_response.status_code}")
+    print(f"File upload response content: {file_response.content}")
+
+    if file_response.status_code != 200:
+        return jsonify({"error": "Failed to upload print file"}), 400
+
+    # 印刷の実行
+    print_url = f"https://api.epsonconnect.com/api/1/printing/printers/{device_id}/jobs/{job_id}/print"
+    print_response = requests.post(
+        print_url,
+        headers={
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+        },
+    )
+
+    if print_response.status_code != 200:
+        return jsonify({"error": "Failed to execute print job"}), 400
+
+    return jsonify(print_response.json())
+
+
+@app.route("/map")
+def map():
     # 福岡の緯度経度
     fukuoka_lat = 33.5902
     fukuoka_lon = 130.4017
