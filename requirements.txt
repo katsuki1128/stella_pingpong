@@ -18,3 +18,4 @@ sgp4==2.23
 skyfield==1.49
 urllib3==2.2.2
 Werkzeug==3.0.3
+Pillow
