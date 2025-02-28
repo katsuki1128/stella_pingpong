@@ -8,17 +8,22 @@
     <title>stellar PingPong</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        #map {
+            background: transparent !important;
+        }
+
+        .leaflet-container {
+            background: transparent !important;
+        }
+    </style>
 </head>
 
 </head>
 
 <body>
     <h1>推しに願いを</h1>
-    <canvas id="satelliteCanvas"></canvas>
-    <!-- 
-    <div id="container">
-        <canvas id="satelliteCanvas"></canvas>
-    </div> -->
+    {# <canvas id="satelliteCanvas"></canvas> #}
 
     <div id="playButton">▶️12時間の動き</div>
     <div id="map"></div>

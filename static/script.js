@@ -1,22 +1,36 @@
 // static/script.js
 import { drawSatelliteTracks } from './drawTracks.js';
-const map = L.map('map').setView([33.5902, 130.4017], 2);
+// const map = L.map('map').setView([33.5902, 130.4017], 2);
 
+// L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+//     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+// }).addTo(map);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-}).addTo(map);
+const map = L.map('map', {
+    crs: L.CRS.Simple, // シンプルな座標系を使用
+    minZoom: -5, // ズームレベルを調整
+    maxZoom: 2, // ズームレベルを調整
+    zoom: 2, // 初期ズームレベル
+    center: [5.5902, 130.4017] // 初期中心座標
+});
+
+// 画像のサイズを設定
+const imageUrl = '/static/img/31640450_m.jpg';
+const imageBounds = [[-500, -500], [500, 500]];  // 画像の範囲を設定
 
 // 福岡を中心とした半径1633kmの円を描画
 const fukuokaLatLng = [33.5902, 130.4017];
-const radius = 1633000; // 半径1633kmをメートルに変換
+const radius = 6433000; // 半径1633kmをメートルに変換
 
 const fukuokaCircle = L.circle(fukuokaLatLng, {
     color: 'green',
     fillColor: '#cce5ff',
     fillOpacity: 0.5,
     radius: radius
-}).addTo(map).bindPopup("福岡から半径1633km");
+}).addTo(map)
+
+// 画像を地図に追加
+L.imageOverlay(imageUrl, imageBounds).addTo(map);
 
 const currentPositions = JSON.parse(document.getElementById('current-positions').textContent);
 const paths = JSON.parse(document.getElementById('paths').textContent);
@@ -84,10 +98,10 @@ const drawPaths = (paths, color) => {
 }
 
 // 過去の航路を青色で表示
-drawPaths(paths, 'gray');
+// drawPaths(paths, 'gray');
 
 // 未来3時間の航路を黄色で表示
-drawPaths(pathsFuture, 'yellow');
+// drawPaths(pathsFuture, 'yellow');
 
 // 再生ボタンをクリックしたときの動作
 document.getElementById('playButton').addEventListener('click', () => {
@@ -103,7 +117,7 @@ document.getElementById('playButton').addEventListener('click', () => {
                 const inside = fukuokaCircle.getBounds().contains([newPos.latitude, newPos.longitude]);
                 updateIconAppearance(markers[satellite], inside, newPos.altitude);
             }
-            drawSatelliteTracks(canvas, pathsFuture, currentTimeIndex, map);
+            // drawSatelliteTracks(canvas, pathsFuture, currentTimeIndex, map);
             currentTimeIndex++;
             setTimeout(updatePositions, updateInterval);
         }
@@ -113,9 +127,9 @@ document.getElementById('playButton').addEventListener('click', () => {
 });
 
 const canvas = document.getElementById('satelliteCanvas');
-drawSatelliteTracks(canvas, pathsFuture, 0, map);
+// drawSatelliteTracks(canvas, pathsFuture, 0, map);
 
 // 地図の範囲が変更されたときに再描画
-map.on('moveend', () => {
-    drawSatelliteTracks(canvas, pathsFuture, 0, map);
-});
+// map.on('moveend', () => {
+//     drawSatelliteTracks(canvas, pathsFuture, 0, map);
+// });
