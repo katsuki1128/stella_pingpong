@@ -23,7 +23,9 @@
     {# <canvas id="satelliteCanvas"></canvas> #}
 
     <div id="playButton">▶️12時間の動き</div>
+    <input type="range" id="slider" min="0" max="200" value="0">
     <div id="map"></div>
+
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script id="current-positions" type="application/json">{{ current_positions | tojson | safe }}</script>
     <script id="paths" type="application/json">{{ paths | tojson | safe }}</script>
