@@ -8,25 +8,24 @@
     <title>stellar PingPong</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-        #map {
-            background: transparent !important;
-        }
-    </style>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+
 </head>
 
 </head>
 
-<body>
-    <h1>推しに願いを</h1>
-    <img src="{{ url_for('static', filename='output/card.png') }}" alt="Card Image" />
-    {# <canvas id="satelliteCanvas"></canvas> #}
-
-    <div id="playButton">▶️12時間の動き</div>
-    <input type="range" id="slider" min="0" max="200" value="0">
-    <div id="distanceDisplay">推しとの距離: 0 km</div>
-    <div id="closestApproach">最も近づく日時: -</div>
-    <div id="map"></div>
+<body class="bg-gray-100 text-gray-900">
+    <h1 class="text-3xl font-bold text-center my-4">推しに願いを</h1>
+    <img src="{{ url_for('static', filename='output/card.png') }}" alt="Card Image" class="mx-auto mb-4" />
+    <div id="playButton"
+        class="bg-blue-500 text-white py-2 px-4 rounded-full cursor-pointer text-center mx-auto mb-4 w-48">▶️12時間の動き
+    </div>
+    <input type="range" id="slider" min="0" max="200" value="0" class="w-full mb-4">
+    <div id="distanceDisplay" class="text-lg font-semibold text-center mb-2">推しとの距離: 0 km</div>
+    <div id="closestApproach" class="text-lg font-semibold text-center mb-4">最も近づく日時: -</div>
+    <img id="growButton" src="/static/img/hack_sonic.png" alt="Grow Icon Button" width="50" height="50"
+        class="mx-auto cursor-pointer">
+    <div id="map" class="mt-4"></div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script id="current-positions" type="application/json">{{ current_positions | tojson | safe }}</script>

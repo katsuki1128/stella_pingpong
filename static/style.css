@@ -12,6 +12,7 @@
 #map {
     height: 580px;
     width: 100%;
+    background: transparent !important;
 }
 
 .satellite-label {
@@ -101,3 +102,38 @@
     width: 42px;
     height: 50px;
 }
+
+#slider {
+    width: 100%;
+}
+
+#distanceDisplay {
+    margin-top: 10px;
+    font-size: 16px;
+}
+
+#closestApproach {
+    margin-top: 10px;
+    font-size: 16px;
+}
+
+#growButton {
+    margin-top: 10px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+#growButton.clicked {
+    animation: like-animation 0.5s ease forwards;
+}
+@keyframes like-animation {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.5);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+</style>

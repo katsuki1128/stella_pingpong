@@ -8,20 +8,6 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 // 画像のサイズを設定
 const imageUrl = '/static/img/universe.jpg';
-// 福岡の座標を中心に
-const centerLat = 33.5902;
-const centerLng = 130.4017;
-
-// 画像の範囲を設定
-const latSpread = 80; // 南北に20度の範囲
-const lngSpread = 150; // 東西に30度の範囲
-
-// const imageBounds = [
-//     [centerLat - latSpread / 2, centerLng - lngSpread / 2], // 左下
-//     [centerLat + latSpread / 2, centerLng + lngSpread / 2]  // 右上
-// ];
-
-
 const imageBounds = [
     [-15, 55], // 左下
     [66, 210]  // 右上
@@ -35,35 +21,6 @@ L.imageOverlay(imageUrl, imageBounds, {
     zIndex: 5
 }).addTo(map);
 
-// const imageWidth = 1920; // 画像の幅
-// const imageHeight = 1280; // 画像の高さ
-
-// // 縮尺係数を調整
-// const scaleFactor = 0.1;
-
-// // 横方向の伸縮率（1.0より大きい値で横に伸びる）
-// const horizontalStretch = 1.55; // 横に1.5倍に伸ばす
-
-// // 地図の中心を画像の中心に合わせる
-// const centerLat = 33.5902;
-// const centerLng = 130.4017;
-
-// // アスペクト比を調整して緯度・経度範囲を計算
-// const latRange = imageHeight * scaleFactor;
-// const lngRange = imageWidth * scaleFactor * horizontalStretch; // 横方向を伸ばす
-
-// // const imageBounds = [
-// //     [centerLat - latRange / 2, centerLng - lngRange / 2],
-// //     [centerLat + latRange / 2, centerLng + lngRange / 2]
-// // ];
-
-// const imageBounds = [[-40, -18], [87, 279]];
-
-// console.log("imageBounds", imageBounds)
-
-// // 画像を地図に追加
-// L.imageOverlay(imageUrl, imageBounds).addTo(map);
-
 const currentPositions = JSON.parse(document.getElementById('current-positions').textContent);
 const paths = JSON.parse(document.getElementById('paths').textContent);
 const pathsFuture = JSON.parse(document.getElementById('paths-future').textContent);
@@ -72,6 +29,9 @@ const markers = {};
 
 // 特定の衛星名
 const targetSatelliteName = "QZS-1R (QZSS/PRN 196)";
+// const targetSatelliteName = "QZS-4 (QZSS/PRN 195)";
+
+let iconSize = { width: 42, height: 50 }; // 初期アイコンサイズ
 
 
 // アイコンの大きさと背景色を変更する関数
@@ -171,6 +131,41 @@ document.getElementById('playButton').addEventListener('click', () => {
     updatePositions();
 });
 
+// 初期表示のための関数
+const displayInitialDistances = () => {
+    const numSteps = pathsFuture[Object.keys(pathsFuture)[0]].length;
+    let closestDistance = Infinity;
+    let closestTimeIndex = -1;
+
+    for (const [satellite, path] of Object.entries(pathsFuture)) {
+        for (let stepIndex = 0; stepIndex < numSteps; stepIndex++) {
+            const newPos = path[stepIndex];
+            if (satellite === targetSatelliteName) {
+                // 福岡との距離を再計算して表示
+                const satelliteLatLng = [newPos.latitude, newPos.longitude];
+                const distance = haversineDistance(fukuokaLatLng, satelliteLatLng);
+                document.getElementById('distanceDisplay').innerText = `推しとの距離: ${Math.round(distance)} km`;
+
+                // 最も近い時点を特定
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestTimeIndex = stepIndex;
+                }
+            }
+        }
+    }
+
+    // 最も近い時点の日時とそれまでの時間を計算して表示
+    if (closestTimeIndex !== -1) {
+        const closestTime = new Date(Date.now() + (closestTimeIndex * (24 * 60 * 60 * 1000 / numSteps)));
+        const now = new Date();
+        const timeDiff = closestTime - now;
+        const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+        document.getElementById('closestApproach').innerText = `最も近づく日時: ${closestTime.toLocaleString()} (あと ${hours}時間${minutes}分) 距離: ${Math.round(closestDistance)} km`;
+    }
+};
+
 
 // スライダーのイベントリスナーを追加
 document.getElementById('slider').addEventListener('input', (event) => {
@@ -194,25 +189,10 @@ document.getElementById('slider').addEventListener('input', (event) => {
             // console.log(`Distance between Fukuoka and ${targetSatelliteName}: ${distance.toFixed(2)} km`);
             document.getElementById('distanceDisplay').innerText = `推しとの距離: ${Math.round(distance)}  km`;
 
-            // 最も近い時点を特定
-            if (distance < closestDistance) {
-                closestDistance = distance;
-                closestTimeIndex = stepIndex;
-            }
-
         } else {
             marker.setLatLng([newPos.latitude, newPos.longitude]);
             updateIconAppearance(marker);
         }
-    }
-    // 最も近い時点の日時とそれまでの時間を計算して表示
-    if (closestTimeIndex !== -1) {
-        const closestTime = new Date(Date.now() + (closestTimeIndex * (24 * 60 * 60 * 1000 / numSteps)));
-        const now = new Date();
-        const timeDiff = closestTime - now;
-        const hours = Math.floor(timeDiff / (1000 * 60 * 60));
-        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-        document.getElementById('closestApproach').innerText = `最も近づく日時: ${closestTime.toLocaleString()} (あと ${hours}時間${minutes}分) 距離: ${Math.round(closestDistance)} km`;
     }
 });
 
@@ -251,3 +231,31 @@ if (targetSatellitePosition) {
 } else {
     console.log(`${targetSatelliteName} not found in currentPositions`);
 }
+
+
+// アイコンのサイズを増加させる関数
+const growIcon = () => {
+    iconSize.width += 5;
+    iconSize.height += 5;
+    const photoUrl = '/static/img/photo.jpg';
+    const photoIconHtml = `
+        <div class="circle-icon" style="width: ${iconSize.width}px; height: ${iconSize.height}px;">
+            <img src="${photoUrl}" style="width: 100%; height: 100%;">
+        </div>
+    `;
+    const customIcon = L.divIcon({
+        html: photoIconHtml,
+        className: '',
+        iconSize: [iconSize.width, iconSize.height], // アイコンのサイズを設定
+        iconAnchor: [iconSize.width / 2, iconSize.height / 2], // アイコンのアンカーを設定
+        popupAnchor: [0, -25] // ポップアップのアンカーを設定
+    });
+    const marker = markers[targetSatelliteName];
+    marker.setIcon(customIcon);
+};
+
+// ボタンのクリックイベントリスナーを追加
+document.getElementById('growButton').addEventListener('click', growIcon);
+
+// ページ読み込み時に初期表示を行う
+window.addEventListener('load', displayInitialDistances);
