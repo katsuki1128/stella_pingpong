@@ -43,7 +43,7 @@
 }
 
 .satellite-icon-inside {
-    background-color: yellow !important;
+    /* background-color: yellow !important; */
 }
 
 #playButton {
@@ -93,4 +93,11 @@
         font-size: 1.5em; /* フォントサイズを小さく */
         text-align: center; /* 中央揃え */
     }
+}
+
+.circle-icon {
+    border-radius: 50%;
+    overflow: hidden;
+    width: 42px;
+    height: 50px;
 }

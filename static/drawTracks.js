@@ -69,6 +69,7 @@ export const drawSatelliteTracks = (canvas, pathsFuture, currentTimeIndex, map) 
             // const yellowColor = `rgba(255, 255, 0, ${1 - normRatio})`;
             const yellowColor = `rgba(255, 255, 0, 1)`;
 
+
             if (arcRadiusX > 0 && arcRadiusY > 0) {
                 ctx.strokeStyle = yellowColor;
                 if (index === currentTimeIndex) {

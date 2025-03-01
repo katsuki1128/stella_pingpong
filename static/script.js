@@ -1,47 +1,68 @@
 // static/script.js
 import { drawSatelliteTracks } from './drawTracks.js';
-const map = L.map('map').setView([33.5902, 130.4017], 2);
+const map = L.map('map').setView([33.5902, 130.4017], 3);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
 
-// const map = L.map('map', {
-//     crs: L.CRS.Simple, // シンプルな座標系を使用
-//     minZoom: -5, // ズームレベルを調整
-//     maxZoom: 2, // ズームレベルを調整
-//     zoom: 2, // 初期ズームレベル
-//     center: [5.5902, 130.4017] // 初期中心座標
-// });
-
-
-
-// 福岡を中心とした半径1633kmの円を描画
-// const fukuokaLatLng = [33.5902, 130.4017];
-// const radius = 6433000; // 半径1633kmをメートルに変換
-
-// const fukuokaCircle = L.circle(fukuokaLatLng, {
-//     color: 'green',
-//     fillColor: '#cce5ff',
-//     fillOpacity: 0.0,
-//     radius: radius
-// }).addTo(map)
-
 // 画像のサイズを設定
 const imageUrl = '/static/img/universe.jpg';
-const imageWidth = 1920; // 画像の幅
-const imageHeight = 1280; // 画像の高さ
-
-// 地図の中心を画像の中心に合わせるためのオフセットを計算
-const centerLat = 5.5902;
+// 福岡の座標を中心に
+const centerLat = 33.5902;
 const centerLng = 130.4017;
+
+// 画像の範囲を設定
+const latSpread = 80; // 南北に20度の範囲
+const lngSpread = 150; // 東西に30度の範囲
+
+// const imageBounds = [
+//     [centerLat - latSpread / 2, centerLng - lngSpread / 2], // 左下
+//     [centerLat + latSpread / 2, centerLng + lngSpread / 2]  // 右上
+// ];
+
+
 const imageBounds = [
-    [centerLat - (imageHeight / 2) * 0.1, centerLng - (imageWidth / 2) * 0.1],
-    [centerLat + (imageHeight / 2) * 0.1, centerLng + (imageWidth / 2) * 0.1]
+    [-15, 55], // 左下
+    [66, 210]  // 右上
 ];
 
-// 画像を地図に追加
-L.imageOverlay(imageUrl, imageBounds).addTo(map);
+console.log("imageBounds", imageBounds)
+
+// 画像をマップに追加
+L.imageOverlay(imageUrl, imageBounds, {
+    opacity: 1,
+    zIndex: 5
+}).addTo(map);
+
+// const imageWidth = 1920; // 画像の幅
+// const imageHeight = 1280; // 画像の高さ
+
+// // 縮尺係数を調整
+// const scaleFactor = 0.1;
+
+// // 横方向の伸縮率（1.0より大きい値で横に伸びる）
+// const horizontalStretch = 1.55; // 横に1.5倍に伸ばす
+
+// // 地図の中心を画像の中心に合わせる
+// const centerLat = 33.5902;
+// const centerLng = 130.4017;
+
+// // アスペクト比を調整して緯度・経度範囲を計算
+// const latRange = imageHeight * scaleFactor;
+// const lngRange = imageWidth * scaleFactor * horizontalStretch; // 横方向を伸ばす
+
+// // const imageBounds = [
+// //     [centerLat - latRange / 2, centerLng - lngRange / 2],
+// //     [centerLat + latRange / 2, centerLng + lngRange / 2]
+// // ];
+
+// const imageBounds = [[-40, -18], [87, 279]];
+
+// console.log("imageBounds", imageBounds)
+
+// // 画像を地図に追加
+// L.imageOverlay(imageUrl, imageBounds).addTo(map);
 
 const currentPositions = JSON.parse(document.getElementById('current-positions').textContent);
 const paths = JSON.parse(document.getElementById('paths').textContent);
@@ -53,48 +74,9 @@ const markers = {};
 const targetSatelliteName = "QZS-1R (QZSS/PRN 196)";
 
 
-// 福岡に一番近い位置の人工衛星を特定する関数
-// const getClosestSatellite = (positions, targetLatLng) => {
-//     let closestSatellite = null;
-//     let minDistance = Infinity;
-
-//     positions.forEach(pos => {
-//         const distance = Math.sqrt(
-//             Math.pow(pos.latitude - targetLatLng[0], 2) +
-//             Math.pow(pos.longitude - targetLatLng[1], 2)
-//         );
-//         if (distance < minDistance) {
-//             minDistance = distance;
-//             closestSatellite = pos;
-//         }
-//     });
-
-//     return closestSatellite;
-// };
-
-// 福岡に一番近い位置の人工衛星を特定
-// const closestSatellite = getClosestSatellite(currentPositions, fukuokaLatLng);
-
-
-// アイコンのHTMLを生成する関数
-// const createIconHtml = (name, size, bgColorClass) => {
-//     return `
-//         <div class="satellite-label">
-//             <div class="satellite-icon 'satellite-icon-inside'" style="font-size: 15px;"></div>
-//             ${name}
-//         </div>
-//     `;
-// };
-
 // アイコンの大きさと背景色を変更する関数
-const updateIconAppearance = (marker, altitude) => {
-    // console.log(`altitude: ${altitude}`);
-
-    // const size = inside ? 30 : 15; // 円の中は30px、外は15px
+const updateIconAppearance = (marker) => {
     const size = 15; // 円の中は30px、外は15px
-    // const bgColorClass = inside ? 'satellite-icon-inside' : '';
-    // const bgColorClass = 'satellite-icon-inside';
-    // const iconHtml = createIconHtml(marker.options.title, 15, 'satellite-icon-inside');
 
     const iconHtml = `
         <div class="satellite-label">
@@ -115,7 +97,13 @@ const updateIconAppearance = (marker, altitude) => {
 // マーカーを作成する関数
 const createMarker = (pos) => {
     const truncatedName = pos.satellite.length > 7 ? pos.satellite.substring(0, 7) + '...' : pos.satellite;
-    const iconHtml = createIconHtml(truncatedName, 15, '');
+    // const iconHtml = createIconHtml(truncatedName, 15, '');
+    const iconHtml = `
+        <div class="satellite-label">
+            <div class="satellite-icon satellite-icon-inside" style="font-size: 15px;"></div>
+            ${truncatedName}
+        </div>
+    `;
     const customIcon = L.divIcon({
         html: iconHtml,
         className: '',
@@ -132,38 +120,28 @@ currentPositions.forEach(pos => {
     if (pos.satellite === targetSatelliteName) {
         // 特定の衛星に対して特別な処理を行う
         const photoUrl = '/static/img/photo.jpg';
-        const photoIcon = L.icon({
-            iconUrl: photoUrl,
-            iconSize: [50, 50], // アイコンのサイズを設定
-            iconAnchor: [25, 25], // アイコンのアンカーを設定
+        const photoIconHtml = `
+            <div class="circle-icon">
+                <img src="${photoUrl}" style="width: 100%; height: 100%;">
+            </div>
+        `;
+        const customIcon = L.divIcon({
+            html: photoIconHtml,
+            className: '',
+            iconSize: [42, 50], // アイコンのサイズを設定
+            iconAnchor: [21, 25], // アイコンのアンカーを設定
             popupAnchor: [0, -25] // ポップアップのアンカーを設定
         });
-        const marker = L.marker([pos.latitude, pos.longitude], { icon: photoIcon }).addTo(map);
+        const marker = L.marker([pos.latitude, pos.longitude], { icon: customIcon }).addTo(map);
         marker.bindPopup('Photo');
         markers[pos.satellite] = marker;
     } else {
         const marker = createMarker(pos);
         markers[pos.satellite] = marker;
         // アイコンの大きさと背景色を初期設定
-        // const inside = fukuokaCircle.getBounds().contains([pos.latitude, pos.longitude]);
-        updateIconAppearance(marker, pos.altitude);
+        updateIconAppearance(marker);
     }
 });
-
-// パスを描画する関数
-// const drawPaths = (paths, color) => {
-//     for (const [satellite, path] of Object.entries(paths)) {
-//         const latlngs = path.map(point => [point.latitude, point.longitude]);
-//         const polyline = L.polyline(latlngs, { color: color }).addTo(map);
-//         polyline.bindPopup(satellite);
-//     }
-// }
-
-// 過去の航路を青色で表示
-// drawPaths(paths, 'gray');
-
-// 未来3時間の航路を黄色で表示
-// drawPaths(pathsFuture, 'yellow');
 
 // 再生ボタンをクリックしたときの動作
 document.getElementById('playButton').addEventListener('click', () => {
@@ -182,7 +160,7 @@ document.getElementById('playButton').addEventListener('click', () => {
                 } else {
                     marker.setLatLng([newPos.latitude, newPos.longitude]);
                     // const inside = fukuokaCircle.getBounds().contains([newPos.latitude, newPos.longitude]);
-                    updateIconAppearance(marker, newPos.altitude);
+                    updateIconAppearance(marker);
                 }
             }
             currentTimeIndex++;
@@ -200,24 +178,76 @@ document.getElementById('slider').addEventListener('input', (event) => {
     const numSteps = pathsFuture[Object.keys(pathsFuture)[0]].length;
     const stepIndex = Math.floor((sliderValue / 200) * numSteps);
 
+    let closestDistance = Infinity;
+    let closestTimeIndex = -1;
+
     for (const [satellite, path] of Object.entries(pathsFuture)) {
         const newPos = path[stepIndex];
         const marker = markers[satellite];
         if (satellite === targetSatelliteName) {
             // 特定の衛星のアイコンを変更しない
             marker.setLatLng([newPos.latitude, newPos.longitude]);
+
+            // 福岡との距離を再計算して表示
+            const satelliteLatLng = [newPos.latitude, newPos.longitude];
+            const distance = haversineDistance(fukuokaLatLng, satelliteLatLng);
+            // console.log(`Distance between Fukuoka and ${targetSatelliteName}: ${distance.toFixed(2)} km`);
+            document.getElementById('distanceDisplay').innerText = `推しとの距離: ${Math.round(distance)}  km`;
+
+            // 最も近い時点を特定
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestTimeIndex = stepIndex;
+            }
+
         } else {
             marker.setLatLng([newPos.latitude, newPos.longitude]);
-            // const inside = fukuokaCircle.getBounds().contains([newPos.latitude, newPos.longitude]);
-            updateIconAppearance(marker, newPos.altitude);
+            updateIconAppearance(marker);
         }
+    }
+    // 最も近い時点の日時とそれまでの時間を計算して表示
+    if (closestTimeIndex !== -1) {
+        const closestTime = new Date(Date.now() + (closestTimeIndex * (24 * 60 * 60 * 1000 / numSteps)));
+        const now = new Date();
+        const timeDiff = closestTime - now;
+        const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+        document.getElementById('closestApproach').innerText = `最も近づく日時: ${closestTime.toLocaleString()} (あと ${hours}時間${minutes}分) 距離: ${Math.round(closestDistance)} km`;
     }
 });
 
-// const canvas = document.getElementById('satelliteCanvas');
-// drawSatelliteTracks(canvas, pathsFuture, 0, map);
+// Haversine 公式を使用して2点間の距離を計算する関数
+const haversineDistance = (coords1, coords2) => {
+    const toRad = (x) => x * Math.PI / 180;
 
-// 地図の範囲が変更されたときに再描画
-// map.on('moveend', () => {
-//     drawSatelliteTracks(canvas, pathsFuture, 0, map);
-// });
+    const lat1 = coords1[0];
+    const lon1 = coords1[1];
+    const lat2 = coords2[0];
+    const lon2 = coords2[1];
+
+    const R = 6371; // 地球の半径（キロメートル）
+
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const d = R * c;
+
+    return d;
+};
+
+const fukuokaLatLng = [33.5902, 130.4017]; // 福岡の位置
+
+
+// 衛星の位置を取得
+const targetSatellitePosition = currentPositions.find(pos => pos.satellite === targetSatelliteName);
+
+if (targetSatellitePosition) {
+    const satelliteLatLng = [targetSatellitePosition.latitude, targetSatellitePosition.longitude];
+    const distance = haversineDistance(fukuokaLatLng, satelliteLatLng);
+    console.log(`Distance between Fukuoka and ${targetSatelliteName}: ${distance.toFixed(2)} km`);
+} else {
+    console.log(`${targetSatelliteName} not found in currentPositions`);
+}
