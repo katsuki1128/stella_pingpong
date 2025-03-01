@@ -12,10 +12,6 @@
         #map {
             background: transparent !important;
         }
-
-        .leaflet-container {
-            background: transparent !important;
-        }
     </style>
 </head>
 
@@ -23,6 +19,7 @@
 
 <body>
     <h1>推しに願いを</h1>
+    <img src="{{ url_for('static', filename='output/card.png') }}" alt="Card Image" />
     {# <canvas id="satelliteCanvas"></canvas> #}
 
     <div id="playButton">▶️12時間の動き</div>
