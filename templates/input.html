@@ -35,6 +35,15 @@
             color: black;
         }
 
+        #mail-text-overlay {
+            position: absolute;
+            top: 89%;
+            left: 22%;
+            transform: translate(-50%, -50%);
+            font-size: 11px;
+            color: black;
+        }
+
         #photo-overlay {
             position: absolute;
             top: 59%;
@@ -58,13 +67,15 @@
 <body>
     <h1>クルー証明書作成</h1>
     <p>推しの名前と写真を登録してください</p>
-    <input type="text" id="name-input" placeholder="名前を入力してください" value="阿部 寛"><br>
-    <input type="text" id="small-text-input" placeholder="アルファベット" value="Abe Hiroshi"><br>
+    <input type="text" id="name-input" placeholder="名前を入力してください" value=""><br>
+    <input type="text" id="small-text-input" placeholder="アルファベット" value=""><br>
+    <input type="text" id="mail-text-input" placeholder="アルファベット" value=""><br>
     <input type="file" id="photo-input" accept="image/*"><br>
     <div id="card-container">
         <img id="card-image" src="{{ url_for('static', filename='img/bg_card.jpg') }}" alt="Crew Card">
         <div id="name-overlay"></div>
         <div id="small-text-overlay"></div>
+        <div id="mail-text-overlay"></div>
         <div id="photo-overlay"><img id="photo" src="" alt="Photo"></div>
     </div>
     <br>
@@ -78,6 +89,9 @@
         });
         document.getElementById('small-text-input').addEventListener('input', function () {
             document.getElementById('small-text-overlay').textContent = this.value;
+        });
+        document.getElementById('mail-text-input').addEventListener('input', function () {
+            document.getElementById('mail-text-overlay').textContent = this.value;
         });
         document.getElementById('photo-input').addEventListener('change', function (event) {
             const file = event.target.files[0];
