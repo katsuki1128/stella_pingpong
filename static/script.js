@@ -28,8 +28,8 @@ const pathsFuture = JSON.parse(document.getElementById('paths-future').textConte
 const markers = {};
 
 // 特定の衛星名
-// const targetSatelliteName = "QZS-1R (QZSS/PRN 196)";
-const targetSatelliteName = "QZS-4 (QZSS/PRN 195)";
+const targetSatelliteName = "QZS-1R (QZSS/PRN 196)";
+// const targetSatelliteName = "QZS-4 (QZSS/PRN 195)";
 
 let iconSize = { width: 42, height: 50 }; // 初期アイコンサイズ
 
