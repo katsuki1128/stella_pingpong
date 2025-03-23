@@ -1,36 +1,42 @@
-<!-- templates/map.html -->
 <!DOCTYPE html>
 <html lang="ja">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>推しに願いを</title>
+    <title>推しに願いを - Stella Pingpong</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
-
-</head>
-
 </head>
 
 <body class="bg-gray-100 text-gray-900">
-    <h1 class="text-3xl font-bold text-center my-4">推しに願いを</h1>
-    <img src="{{ url_for('static', filename='output/card.png') }}" alt="Card Image" class="mx-auto mb-4" />
+
+    <!-- ゲーム用Canvas（ボールやラケット）: 最上面に表示 -->
+    <canvas id="pingpong-game-canvas"
+        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000;"></canvas>
+
+    <!-- 衛星ライン表示用Canvas -->
+    <canvas id="pingpong-line-canvas"
+        style="position: absolute; top: 0; left: 0; width: 100%; height: 100px; z-index: 600;"></canvas>
+
+    <!-- 再生ボタン -->
     <div id="playButton"
-        class="bg-blue-500 text-white py-2 px-4 rounded-full cursor-pointer text-center mx-auto mb-4 w-48">▶️12時間の動き
+        class="bg-blue-500 text-white py-2 px-4 rounded-full cursor-pointer text-center mx-auto mb-4 w-48 relative z-50">
+        ▶️12時間の動き
     </div>
-    <input type="range" id="slider" min="0" max="200" value="0" class="w-full mb-4">
-    <div id="distanceDisplay" class="text-lg font-semibold text-center mb-2">推しとの距離: 0 km</div>
-    <div id="closestApproach" class="text-lg font-semibold text-center mb-4">最も近づく日時: -</div>
-    <img id="growButton" src="/static/img/hack_sonic.png" alt="Grow Icon Button" width="50" height="50"
-        class="mx-auto cursor-pointer">
-    <div id="map" class="mt-4"></div>
+
+    <!-- 地図表示エリア -->
+    <div id="map" class="mt-4" style="width: 100%; height: 90vh; position: relative; z-index: 0;"></div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <!-- データ埋め込み -->
     <script id="current-positions" type="application/json">{{ current_positions | tojson | safe }}</script>
     <script id="paths" type="application/json">{{ paths | tojson | safe }}</script>
     <script id="paths-future" type="application/json">{{ paths_future | tojson | safe }}</script>
+
+    <!-- スクリプト読み込み -->
     <script src="{{ url_for('static', filename='script.js') }}" type="module"></script>
 
 </body>

@@ -263,10 +263,10 @@ def print_image():
 
 @app.route("/map")
 def map():
-    # 福岡の緯度経度
-    fukuoka_lat = 33.5902
-    fukuoka_lon = 130.4017
-    fukuoka_position = (fukuoka_lat, fukuoka_lon)
+    # 柳川市の緯度経度
+    yanagawa_lat = 33.1631
+    yanagawa_lon = 130.3999
+    yanagawa_position = (yanagawa_lat, yanagawa_lon)
 
     cached_sats_within_range = load_cache()
     tle_file_path = get_tle_file()
@@ -282,10 +282,10 @@ def map():
     else:
         print("Calculating new data")
 
-        # 福岡の半径1633km以内を航行する衛星を検出
+        # 柳川の半径1633km以内を航行する衛星を検出
         sats_within_range = []
 
-        # 福岡の半径1633km以内を航行する衛星を検出
+        # 柳川の半径1633km以内を航行する衛星を検出
         for sat in sats:
             within_range = False
 
@@ -295,7 +295,7 @@ def map():
                     subpoint.latitude.degrees,
                     subpoint.longitude.degrees,
                 )
-                if is_within_range(satellite_position, fukuoka_position):
+                if is_within_range(satellite_position, yanagawa_position):
                     within_range = True
                     break
 
@@ -306,7 +306,7 @@ def map():
                         subpoint.latitude.degrees,
                         subpoint.longitude.degrees,
                     )
-                    if is_within_range(satellite_position, fukuoka_position):
+                    if is_within_range(satellite_position, yanagawa_position):
                         within_range = True
                         break
 
@@ -345,6 +345,11 @@ def map():
         paths=paths_past,
         paths_future=paths_future,
     )
+
+
+@app.route("/controller")
+def controller():
+    return render_template("controller.html")
 
 
 if __name__ == "__main__":

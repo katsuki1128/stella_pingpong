@@ -1,0 +1,31 @@
+<!-- templates/controller.html -->
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ラケットコントローラー</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+    <h1>スマホを傾けてラケットを操作</h1>
+    <p id="status">接続中...</p>
+
+    <script>
+        const socket = new WebSocket("wss://【ここにPC側サーバーのWebSocket URL】");
+
+        socket.addEventListener('open', () => {
+            document.getElementById('status').innerText = "接続完了！スマホを左右に傾けて操作";
+        });
+
+        window.addEventListener('deviceorientation', (event) => {
+            const gamma = event.gamma;  // 左右の傾き（-90 〜 +90）
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({ type: 'tilt', value: gamma }));
+            }
+        });
+    </script>
+</body>
+
+</html>
