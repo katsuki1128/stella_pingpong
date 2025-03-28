@@ -13,7 +13,7 @@
     <p id="status">接続中...</p>
 
     <script>
-        const socket = new WebSocket("wss://【ここにPC側サーバーのWebSocket URL】");
+        const socket = new WebSocket("ws://157.7.128.51:5001");
 
         socket.addEventListener('open', () => {
             document.getElementById('status').innerText = "接続完了！スマホを左右に傾けて操作";

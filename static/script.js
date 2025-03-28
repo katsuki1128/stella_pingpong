@@ -2,7 +2,9 @@
 import { drawSatelliteTracks } from './drawTracks.js';
 import { drawPingPongLine } from './pingpongLine.js';
 
+// const socket = window.socket;
 const socket = io.connect(location.origin);
+console.log("socket", socket)
 
 socket.on("tilt_update", (data) => {
     const tiltValue = data.gamma;
